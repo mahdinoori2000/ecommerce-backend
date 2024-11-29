@@ -3,11 +3,14 @@ import errorHandler from './middlewares/errorMiddleware';
 import { authRoutes } from './modules/auth/auth.routes';
 import globalMiddlewares from './middlewares/globalMiddleware';
 import requireAuth from './middlewares/requireAuthMiddleware';
+import currentUserMiddleware from './middlewares/currentUserMiddleware';
 import NotFoundError from './errors/notFound.error';
 
 const app = express()
 
 globalMiddlewares(app);
+
+app.use(currentUserMiddleware);
 
 app.use("/auth", authRoutes);
 

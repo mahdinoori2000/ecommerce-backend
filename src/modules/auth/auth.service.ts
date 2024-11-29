@@ -2,6 +2,7 @@ import User from "../user/user.model"; // Adjust path and IUser interface if nec
 import { IUser } from "../user/user.interface";
 import NotAuhorizedError from "../../errors/notAuthorized.error";
 import NotFoundError from "../../errors/notFound.error";
+import { sendForgotPasswordEmail } from "../../emails/forgotPasswordEmail";
 
 class AuthService {
   /**
@@ -55,6 +56,49 @@ class AuthService {
 
     user.password = password;
     await user.save();
+  }
+
+  /**
+   * create token for new password 
+   * @param email - The user's Email
+   */
+  forgotPassword = async (email: string) => {
+    const user = await User.find({ email });
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Generate the random reset token
+    const resetToken = user[0].createPasswordResetToken();
+    await user[0].save({ validateBeforeSave: false });
+    const resetURL = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
+
+    // Send it to user's email
+    await sendForgotPasswordEmail(email, resetURL);
+    
+  }
+  /**
+   * Create New Password
+   * @param resetToken - string
+   * @param newPassword - string
+   */
+  resetPassword = async (resetToken: string, newPassword: string) => {
+    const user = await User.findOne({ passwordResetToken: resetToken });
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+  }
+
+  activateAccount = async (token: string) => {
+    const user = await User.findOne({ passwordResetToken: token })
+    if (!user) {
+      throw new NotFoundError("")
+    }
   }
 }
 

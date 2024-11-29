@@ -4,7 +4,7 @@ export interface IUser extends Document {
     firstName: string;
     lastName: string;
     email: string;
-    role: 'visitor' | 'admin' | 'user';
+    role:  'admin' | 'user';
     profileImage?: string | null;
     dateOfBirth?: Date | null;
     phoneNumber?: string | null;

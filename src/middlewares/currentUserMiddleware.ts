@@ -1,15 +1,17 @@
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { config } from "../config/index"
 
-interface UserPayload {
+export interface UserPayload {
     id: string;
     email: string;
+    role: string;
 }
 
 declare global {
     namespace Express {
         interface Request {
             currentUser?: UserPayload;
-            session?: { jwt?: string };
         }
     }
 }
@@ -19,14 +21,20 @@ const currentUserMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (!req.session?.jwt) {
+    const token = req.cookies?.token;
+
+    if (!token) {
         return next();
     }
 
     try {
-        const payload = JSON.parse(req.session.jwt) as UserPayload;
+        const payload = jwt.verify(token, config.jwtSecret) as UserPayload;
         req.currentUser = payload;
-    } catch (err) {}
+    } catch (err) {
+        console.error("Invalid token:", err);
+    } 
 
     next();
 };
+
+export default currentUserMiddleware;
