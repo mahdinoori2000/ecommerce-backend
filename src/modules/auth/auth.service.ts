@@ -95,10 +95,23 @@ class AuthService {
   }
 
   activateAccount = async (token: string) => {
+
+    if (!token) {
+      throw new NotFoundError("Invalid token");
+    }
+
+
     const user = await User.findOne({ passwordResetToken: token })
     if (!user) {
-      throw new NotFoundError("")
+      throw new NotFoundError("User not found");
     }
+
+    user.isActived = true;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    
+    return user;
   }
 }
 

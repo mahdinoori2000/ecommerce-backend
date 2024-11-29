@@ -83,11 +83,13 @@ class AuthController {
 
     activateAccount = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
         const { token } = req.params;
-        if (!token) {
-            throw new NotFoundError("Invalid token");
-        }
 
         const user = await this.authService.activateAccount(token);
+
+        if (user.isActived) {
+            const message = 'Account activated successfully';
+            clientResponse(res, null, message, 204);
+        }
     })
 }
 
